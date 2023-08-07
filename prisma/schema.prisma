@@ -10,7 +10,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model DashboardCard {
-  id    Int    @id @default(autoincrement())
-  title String @db.VarChar(100)
+enum Structure {
+  areaCode
+  areaName
+  date
+  newCasesByPublishDate
+  newDeaths28DaysByPublishDate
+  cumCasesByPublishDate
+  cumDeaths28DaysByPublishDate
+}
+
+model SignleLineChart {
+  id           Int        @id @default(autoincrement())
+  apiFilters   ApiFilters @relation(fields: [apiFiltersId], references: [id])
+  apiFiltersId Int
+  cardInfo     CardInfo   @relation(fields: [cardInfoId], references: [id])
+  cardInfoId   Int
+  xAxis        Axis       @relation("xAxis", fields: [xAxisId], references: [id])
+  xAxisId      Int
+  yAxis        Axis       @relation("yAxis", fields: [yAxisId], references: [id])
+  yAxisId      Int
+  page         Int?
+}
+
+model PieChart {
+  id           Int        @id @default(autoincrement())
+  apiFilters   ApiFilters @relation(fields: [apiFiltersId], references: [id])
+  apiFiltersId Int
+  cardInfo     CardInfo   @relation(fields: [cardInfoId], references: [id])
+  cardInfoId   Int
+  yAxis        Axis       @relation(fields: [yAxisId], references: [id])
+  yAxisId      Int
+  latestBy     Structure
+}
+
+model Axis {
+  id             Int       @id @default(autoincrement())
+  structureParam Structure
+  title          String
+
+  xAxis    SignleLineChart[] @relation("xAxis")
+  yAxis    SignleLineChart[] @relation("yAxis")
+  PieChart PieChart[]
+
+  @@unique([title, structureParam])
+}
+
+model ApiFilters {
+  id       Int    @id @default(autoincrement())
+  areaType String
+  areaName String
+
+  PieChart        PieChart[]
+  SignleLineChart SignleLineChart[]
+}
+
+model CardInfo {
+  id           Int        @id @default(autoincrement())
+  title        String     @db.VarChar(100)
+  favourite    Boolean    @default(false)
+  Avatar       CardAvatar @relation(fields: [cardAvatarId], references: [id])
+  cardAvatarId Int
+
+  SignleLineChart SignleLineChart[]
+  PieChart        PieChart[]
+}
+
+model CardAvatar {
+  id      Int    @id @default(autoincrement())
+  url     String
+  altText String
+
+  card CardInfo[]
 }

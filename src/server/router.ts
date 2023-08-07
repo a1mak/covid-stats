@@ -3,13 +3,67 @@ import { publicProcedure, router } from '@/server/trpc'
 import { z } from 'zod'
 
 export const appRouter = router({
-  allCards: publicProcedure.query(async () => {
-    const chart = await prisma.dashboardCard.findMany()
+  allLineCharts: publicProcedure.query(async () => {
+    const chart = await prisma.signleLineChart.findMany({
+      select: {
+        id: true,
+        cardInfo: {
+          select: {
+            title: true,
+            favourite: true,
+            Avatar: true,
+          },
+        },
+        apiFilters: {
+          select: {
+            areaType: true,
+            areaName: true,
+          },
+        },
+        xAxis: {
+          select: {
+            title: true,
+            structureParam: true,
+          },
+        },
+        yAxis: {
+          select: {
+            title: true,
+            structureParam: true,
+          },
+        },
+        page: true,
+      },
+    })
 
     return chart
   }),
-  cardById: publicProcedure.input(z.number()).query(async ({ input: id }) => {
-    const chart = await prisma.dashboardCard.findUnique({ where: { id } })
+  allPieCharts: publicProcedure.query(async () => {
+    const chart = await prisma.pieChart.findMany({
+      select: {
+        id: true,
+        cardInfo: {
+          select: {
+            title: true,
+            favourite: true,
+            Avatar: true,
+          },
+        },
+        apiFilters: {
+          select: {
+            areaType: true,
+            areaName: true,
+          },
+        },
+        yAxis: {
+          select: {
+            title: true,
+            structureParam: true,
+          },
+        },
+        latestBy: true,
+      },
+    })
 
     return chart
   }),
