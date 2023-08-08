@@ -14,7 +14,7 @@ export const appRouter = router({
           select: {
             title: true,
             favourite: true,
-            Avatar: true,
+            avatar: true,
           },
         },
         apiFilters: {

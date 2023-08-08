@@ -30,16 +30,16 @@ model ApiFilters {
   id       Int     @id @default(autoincrement())
   areaType String  @db.VarChar(20)
   areaName String  @db.VarChar(30)
-  Chart    Chart[]
+  chart    Chart[]
 }
 
 model CardInfo {
   id           Int        @id @default(autoincrement())
   title        String     @db.VarChar(100)
   favourite    Boolean    @default(false)
-  Avatar       CardAvatar @relation(fields: [cardAvatarId], references: [id])
+  avatar       CardAvatar @relation(fields: [cardAvatarId], references: [id])
   cardAvatarId Int
-  Chart        Chart[]
+  chart        Chart[]
 }
 
 model CardAvatar {
