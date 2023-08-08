@@ -39,7 +39,7 @@ export const appRouter = router({
             covidData: resObj?.data || [],
           }
         })
-      } else if (chart.type === 'pie') {
+      } else {
         return fetchCovidApi({
           filters: chart.apiFilters,
           structure: ['areaName', 'cumCasesByPublishDate'],
@@ -66,6 +66,35 @@ export const appRouter = router({
       })
     }
   }),
+  addToFavourites: publicProcedure
+    .input(z.number())
+    .mutation(async ({ input: id }) => {
+      return await prisma.$transaction(async (tx) => {
+        const chart = await tx.chart.findUnique({
+          select: {
+            cardInfo: {
+              select: { favourite: true },
+            },
+          },
+          where: { id },
+        })
+
+        if (!chart) {
+          throw new Error(`Chart with id ${id} doesn't exist`)
+        }
+
+        const updatedChart = await tx.chart.update({
+          where: { id },
+          data: {
+            cardInfo: {
+              update: { favourite: !chart.cardInfo.favourite },
+            },
+          },
+        })
+
+        return updatedChart
+      })
+    }),
 })
 
 export type AppRouter = typeof appRouter
