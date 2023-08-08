@@ -5,12 +5,24 @@ import type { AppRouter } from '@/server/router'
 import { trpc } from '@/utils/trpc'
 import { inferRouterOutputs } from '@trpc/server'
 import { Avatar, Card } from 'antd'
+import dynamic from 'next/dynamic'
+
+const LineChart = dynamic(() => import('@/components/LineChart'), {
+  ssr: false,
+})
+
+const PieChart = dynamic(() => import('@/components/PieChart'), {
+  ssr: false,
+})
 
 type ChartCardProps = inferRouterOutputs<AppRouter>['allCharts'][number]
 
 export default function ChartCard({
   id,
   cardInfo: { title, favourite, avatar },
+  apiFilters: { areaType, areaName },
+  type,
+  covidData,
 }: ChartCardProps) {
   const context = trpc.useContext()
   const { mutate: mutateFav, isLoading: isFavLoading } =
@@ -34,7 +46,25 @@ export default function ChartCard({
       headStyle={{ fontWeight: 'bold' }}
     >
       <Card.Grid hoverable={false} style={{ width: '100%', aspectRatio: 1 }}>
-        Chart here
+        {type === 'singleLine' ? (
+          <LineChart
+            data={
+              covidData as {
+                date: string
+                newCasesByPublishDate: number
+              }[]
+            }
+          />
+        ) : (
+          <PieChart
+            data={
+              covidData as {
+                areaName: string
+                cumCasesByPublishDate: number
+              }[]
+            }
+          />
+        )}
       </Card.Grid>
       <ActionsPanel>
         <Avatar src={avatar.url} alt={avatar.altText} />

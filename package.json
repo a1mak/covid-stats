@@ -21,6 +21,7 @@
   "dependencies": {
     "@ant-design/cssinjs": "^1.16.1",
     "@ant-design/icons": "^5.2.5",
+    "@antv/g2": "^5.0.18",
     "@prisma/client": "^5.1.1",
     "@tanstack/react-query": "^4.32.6",
     "@trpc/client": "^10.37.1",
