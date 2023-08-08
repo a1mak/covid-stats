@@ -7,10 +7,7 @@ import { trpc } from '@/utils/trpc'
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
-  const { data: lineChartsData, status: lineChartsStatus } =
-    trpc.allLineCharts.useQuery()
-  const { data: pieChartsData, status: pieChartsStatus } =
-    trpc.allPieCharts.useQuery()
+  const { data: chartsData, status: chartsStatus } = trpc.allCharts.useQuery()
   return (
     <>
       <Head>
@@ -23,9 +20,7 @@ export default function Home() {
         <div>
           Covid Dashboard
           <br />
-          {lineChartsStatus === 'success' && JSON.stringify(lineChartsData)}
-          <br />
-          {pieChartsStatus === 'success' && JSON.stringify(pieChartsData)}
+          {chartsStatus === 'success' && JSON.stringify(chartsData)}
         </div>
       </main>
     </>

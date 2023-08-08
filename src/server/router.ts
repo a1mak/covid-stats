@@ -1,12 +1,15 @@
+import fetchCovidApi from '@/server/covidApi'
 import { prisma } from '@/server/db'
 import { publicProcedure, router } from '@/server/trpc'
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
 export const appRouter = router({
-  allLineCharts: publicProcedure.query(async () => {
-    const chart = await prisma.signleLineChart.findMany({
+  allCharts: publicProcedure.query(async () => {
+    const charts = await prisma.chart.findMany({
       select: {
         id: true,
+        type: true,
         cardInfo: {
           select: {
             title: true,
@@ -20,52 +23,48 @@ export const appRouter = router({
             areaName: true,
           },
         },
-        xAxis: {
-          select: {
-            title: true,
-            structureParam: true,
-          },
-        },
-        yAxis: {
-          select: {
-            title: true,
-            structureParam: true,
-          },
-        },
-        page: true,
+        xAxisLabel: true,
+        yAxisLabel: true,
       },
     })
 
-    return chart
-  }),
-  allPieCharts: publicProcedure.query(async () => {
-    const chart = await prisma.pieChart.findMany({
-      select: {
-        id: true,
-        cardInfo: {
-          select: {
-            title: true,
-            favourite: true,
-            Avatar: true,
-          },
-        },
-        apiFilters: {
-          select: {
-            areaType: true,
-            areaName: true,
-          },
-        },
-        yAxis: {
-          select: {
-            title: true,
-            structureParam: true,
-          },
-        },
-        latestBy: true,
-      },
+    const chartPromises = charts.map((chart) => {
+      if (chart.type === 'singleLine') {
+        return fetchCovidApi({
+          filters: chart.apiFilters,
+          structure: ['date', 'newCasesByPublishDate'],
+        }).then((resObj) => {
+          return {
+            ...chart,
+            covidData: resObj?.data || [],
+          }
+        })
+      } else if (chart.type === 'pie') {
+        return fetchCovidApi({
+          filters: chart.apiFilters,
+          structure: ['areaName', 'cumCasesByPublishDate'],
+          latestBy: 'cumCasesByPublishDate',
+        }).then((resObj) => {
+          return {
+            ...chart,
+            covidData: resObj?.data || [],
+          }
+        })
+      }
     })
 
-    return chart
+    try {
+      const chartResponses = await Promise.all(chartPromises)
+
+      return chartResponses
+    } catch (err) {
+      console.error(err)
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Something went wrong',
+        cause: err,
+      })
+    }
   }),
 })
 

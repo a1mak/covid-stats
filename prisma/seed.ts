@@ -5,18 +5,6 @@ const prisma = new PrismaClient()
 async function main() {
   try {
     console.log('Seeding started...')
-    const dateAxis = await prisma.axis.create({
-      data: {
-        title: 'Date',
-        structureParam: 'date',
-      },
-    })
-    const newCasesAxis = await prisma.axis.create({
-      data: {
-        title: 'Cases',
-        structureParam: 'newCasesByPublishDate',
-      },
-    })
     const filtersParamEngland = await prisma.apiFilters.create({
       data: {
         areaType: 'nation',
@@ -36,26 +24,20 @@ async function main() {
         cardAvatarId: cardAvatarEngland.id,
       },
     })
-    const chartEngland = await prisma.signleLineChart.create({
+    const chartEngland = await prisma.chart.create({
       data: {
+        type: 'singleLine',
         apiFiltersId: filtersParamEngland.id,
         cardInfoId: cardEngland.id,
-        xAxisId: dateAxis.id,
-        yAxisId: newCasesAxis.id,
-        page: 1,
-      },
-    })
-    const cumCasesAxis = await prisma.axis.create({
-      data: {
-        title: 'Cases',
-        structureParam: 'cumCasesByPublishDate',
+        xAxisLabel: 'Date',
+        yAxisLabel: 'Cases',
       },
     })
 
     const filtersParamUK = await prisma.apiFilters.create({
       data: {
         areaType: 'nation',
-        areaName: 'United Kingdom',
+        areaName: '', // Empty means whole UK
       },
     })
     const cardAvatarUK = await prisma.cardAvatar.create({
@@ -71,12 +53,13 @@ async function main() {
         cardAvatarId: cardAvatarUK.id,
       },
     })
-    const pieChartUK = await prisma.pieChart.create({
+    const pieChartUK = await prisma.chart.create({
       data: {
+        type: 'pie',
         apiFiltersId: filtersParamUK.id,
         cardInfoId: cardUK.id,
-        yAxisId: cumCasesAxis.id,
-        latestBy: 'cumCasesByPublishDate',
+        yAxisLabel: 'Cases',
+        xAxisLabel: 'Nation',
       },
     })
 
