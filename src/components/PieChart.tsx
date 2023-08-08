@@ -44,8 +44,6 @@ function renderPieChart<T extends Record<string, any>>(
     theme: 'classic',
     autoFit: true,
     data: chartData,
-    marginLeft: 10,
-    marginRight: 10,
   })
 
   chart.coordinate({ type: 'theta', innerRadius: 0.25, outerRadius: 0.8 })
@@ -62,16 +60,7 @@ function renderPieChart<T extends Record<string, any>>(
       style: {
         fontWeight: 'bold',
         offset: 14,
-      },
-    })
-    .label({
-      text: 'areaName',
-      position: 'spider',
-      connectorDistance: 0,
-      style: {
-        fontWeight: 'bold',
-        textBaseline: 'bottom',
-        dy: -4,
+        stroke: '#333'
       },
     })
     .style('radius', 4)
