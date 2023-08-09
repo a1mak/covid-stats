@@ -35,8 +35,7 @@ export default function Home() {
               boxShadow: token.boxShadowSecondary,
             }}
           >
-            <Typography.Title
-              level={1}
+            <span
               style={{
                 fontSize: '1.125rem',
                 marginBottom: 0,
@@ -44,7 +43,7 @@ export default function Home() {
               }}
             >
               Covid statistics
-            </Typography.Title>
+            </span>
           </Layout.Header>
           <Layout.Content
             style={{
