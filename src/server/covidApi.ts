@@ -1,42 +1,56 @@
 import normalizeStructureParam from '@/utils/normalizeStructureParam'
 import { ApiFilters } from '@prisma/client'
+import { z } from 'zod'
 
-type ResponseDataMap = {
-  date: string
-  areaName: string
-  areaCode: string
-  newCasesByPublishDate: number
-  cumCasesByPublishDate: number
-  newDeaths28DaysByPublishDate: number
-  cumDeaths28DaysByPublishDate: number
-}
+const ResponseDataSchema = z.object({
+  date: z.string(),
+  areaName: z.string(),
+  areaCode: z.string(),
+  newCasesByPublishDate: z.number(),
+  cumCasesByPublishDate: z.number(),
+  newDeaths28DaysByPublishDate: z.number(),
+  cumDeaths28DaysByPublishDate: z.number(),
+})
+type ResponseData = z.infer<typeof ResponseDataSchema>
 
-type Structure = keyof ResponseDataMap
+const createCovidSchema = <TData extends keyof ResponseData>(data: TData[]) =>
+  z.object({
+    length: z.number(),
+    maxPageLimit: z.number(),
+    totalRecords: z.number(),
+    data: ResponseDataSchema.pick(
+      data.reduce((obj, item) => {
+        obj[item] = true
+        return obj
+      }, {} as Record<TData, boolean>)
+    ).array(),
+    requestPayload: z.object({
+      structure: z.record(
+        ResponseDataSchema.keyof(),
+        ResponseDataSchema.keyof()
+      ),
+      filters: z
+        .object({
+          identifier: z.string(),
+          operator: z.literal('='),
+          value: z.string(),
+        })
+        .array(),
+      page: z.number().optional(),
+    }),
+    pagination: z
+      .object({
+        current: z.string().nullable(),
+        next: z.string().nullable(),
+        previous: z.string().nullable(),
+        first: z.string().nullable(),
+        last: z.string().nullable(),
+      })
+      .optional(),
+  })
 
-export type CovidResponse<T extends keyof ResponseDataMap> = {
-  length: number
-  maxPageLimit: number
-  totalRecords: number
-  data: Pick<ResponseDataMap, T>[]
-  requestPayload: {
-    structure: Record<T, T>
-    filters: {
-      identifier: string
-      operator: '='
-      value: string
-    }[]
-    page: number
-  }
-  pagination: {
-    current: string | null
-    next: string | null
-    previous: string | null
-    first: string | null
-    last: string | null
-  }
-}
-
-type getCoronaCasesUrlParams<T extends Structure> = {
+type Structure = keyof ResponseData
+type CovidApiParams<T extends Structure> = {
   filters: Omit<ApiFilters, 'id'>
   structure: T[]
   latestBy?: T
@@ -48,7 +62,7 @@ export default async function fetchCovidApi<T extends Structure>({
   structure,
   latestBy,
   page,
-}: getCoronaCasesUrlParams<T>) {
+}: CovidApiParams<T>) {
   const endpoint = 'https://api.coronavirus.data.gov.uk/v1/data?'
   const normalizedStructure = normalizeStructureParam(structure)
   const composedFilters = []
@@ -63,7 +77,8 @@ export default async function fetchCovidApi<T extends Structure>({
     ...(latestBy ? { latestBy } : {}),
   })
   const response = await fetch(endpoint + apiParams)
-  const json = (await response.json()) as Promise<CovidResponse<T>>
 
-  return json
+  const json = await response.json()
+
+  return createCovidSchema(structure).parse(json)
 }
