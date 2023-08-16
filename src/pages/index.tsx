@@ -1,6 +1,6 @@
 import Dashboard from '@/components/Dashboard'
 import useClientBreakpoint from '@/utils/useClientBreakpoint'
-import { Layout, Space, Typography, theme } from 'antd'
+import { Layout, Space, theme } from 'antd'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
 

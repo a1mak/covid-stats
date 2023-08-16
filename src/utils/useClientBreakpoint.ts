@@ -11,5 +11,5 @@ export default function useClientBreakpoint() {
     if (hasWindow) setBreakpoint(screens)
   }, [hasWindow, screens])
 
-  return screens
+  return breakpoint || { xs: true }
 }
