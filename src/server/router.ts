@@ -1,4 +1,4 @@
-import fetchCovidApi from '@/server/covidApi'
+import fetchCovidApi from '@/libs/covidApi'
 import { prisma } from '@/server/db'
 import { publicProcedure, router } from '@/server/trpc'
 import { TRPCError } from '@trpc/server'
